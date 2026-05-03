@@ -1,0 +1,303 @@
+:root {
+  color-scheme: dark;
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  color: var(--text-primary);
+  background: var(--app-bg);
+  --app-bg: #111111;
+  --bg-overlay: rgba(10, 10, 10, 0.55);
+  --bg-filter: blur(2px) brightness(0.56);
+  --accent: #0a84ff;
+  --accent-hover: #0071e3;
+  --text-primary: #f0f0f0;
+  --text-secondary: #888888;
+  --text-hint: #555555;
+  --drop-text: #d0d0d0;
+  --danger: #ff8b8b;
+  --btn-outline-border: rgba(255, 255, 255, 0.35);
+  --btn-outline-hover: rgba(255, 255, 255, 0.12);
+  --btn-outline-hover-border: rgba(255, 255, 255, 0.6);
+  --input-bg: rgba(255, 255, 255, 0.08);
+  --input-border: rgba(255, 255, 255, 0.18);
+  --input-border-focus: #0a84ff;
+  --select-arrow: rgba(255, 255, 255, 0.65);
+  --dot-inactive: #333333;
+  --dots-bg: rgba(12, 16, 24, 0.62);
+  --dots-border: rgba(255, 255, 255, 0.08);
+  --dropzone-active-border: rgba(255, 255, 255, 0.85);
+  --dropzone-active-tint: rgba(10, 132, 255, 0.12);
+  --loading-scrim: rgba(0, 0, 0, 0.42);
+  --spinner-track: rgba(255, 255, 255, 0.2);
+  --divider: rgba(255, 255, 255, 0.08);
+  --progress-track: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --app-bg: #edf1f6;
+    --bg-overlay: rgba(250, 252, 255, 0.46);
+    --bg-filter: blur(2px) brightness(0.92);
+    --text-primary: #142033;
+    --text-secondary: #4b5a72;
+    --text-hint: #6b7485;
+    --drop-text: #3e4a5d;
+    --btn-outline-border: rgba(20, 32, 51, 0.18);
+    --btn-outline-hover: rgba(20, 32, 51, 0.06);
+    --btn-outline-hover-border: rgba(20, 32, 51, 0.34);
+    --input-bg: rgba(255, 255, 255, 0.58);
+    --input-border: rgba(20, 32, 51, 0.14);
+    --select-arrow: rgba(20, 32, 51, 0.55);
+    --dot-inactive: rgba(20, 32, 51, 0.18);
+    --dots-bg: rgba(255, 255, 255, 0.72);
+    --dots-border: rgba(20, 32, 51, 0.08);
+    --dropzone-active-border: rgba(10, 132, 255, 0.62);
+    --dropzone-active-tint: rgba(10, 132, 255, 0.1);
+    --loading-scrim: rgba(255, 255, 255, 0.52);
+    --spinner-track: rgba(20, 32, 51, 0.18);
+    --divider: rgba(20, 32, 51, 0.1);
+    --progress-track: rgba(20, 32, 51, 0.12);
+  }
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--app-bg);
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  user-select: none;
+}
+
+.canvas {
+  width: 428px;
+  height: 318px;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+}
+
+.canvas .bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: var(--bg-filter);
+  z-index: 0;
+  transition: opacity 120ms ease;
+}
+
+.canvas .default-bg {
+  opacity: 1;
+}
+
+.canvas .waiting-bg {
+  opacity: 0;
+}
+
+.canvas.waiting .bg {
+  filter: brightness(0.92);
+}
+
+.canvas.waiting .default-bg {
+  opacity: 0;
+}
+
+.canvas.waiting .waiting-bg {
+  opacity: 1;
+}
+
+.canvas .overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-overlay);
+  z-index: 1;
+}
+
+.canvas.waiting .overlay {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.canvas .content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-shell {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 44px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 18px 10px;
+  box-sizing: border-box;
+}
+
+.page-title {
+  margin: 0 0 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-primary);
+}
+
+.hint {
+  color: var(--text-secondary);
+}
+
+.button-filled {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 80ms;
+}
+
+.button-filled:hover:enabled {
+  background: var(--accent-hover);
+}
+
+.button-filled:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.button-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--btn-outline-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 80ms, border-color 80ms;
+}
+
+.button-outline:hover {
+  background: var(--btn-outline-hover);
+  border-color: var(--btn-outline-hover-border);
+}
+
+.text-input,
+.select-input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+  transition: border-color 120ms;
+  box-sizing: border-box;
+}
+
+.text-input:focus,
+.select-input:focus {
+  border-color: var(--input-border-focus);
+}
+
+.select-input {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--select-arrow) 50%), linear-gradient(135deg, var(--select-arrow) 50%, transparent 50%);
+  background-position: calc(100% - 15px) 13px, calc(100% - 10px) 13px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.nav-bar {
+  position: absolute;
+  inset: auto 0 0;
+  height: 44px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 92px 1fr 92px;
+  align-items: center;
+  z-index: 3;
+}
+
+.nav-bar .nav-slot {
+  display: flex;
+  align-items: center;
+}
+
+.nav-bar .nav-slot.right {
+  justify-content: flex-end;
+}
+
+.nav-next {
+  flex-shrink: 0;
+}
+
+.nav-text {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0;
+  cursor: pointer;
+}
+
+.nav-text:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+  justify-self: center;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px solid var(--dots-border);
+  border-radius: 999px;
+  background: var(--dots-bg);
+  backdrop-filter: blur(8px);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot-inactive);
+}
+
+.dot.active {
+  background: var(--accent);
+}
+
+.page-transition {
+  width: 100%;
+  height: 100%;
+}
