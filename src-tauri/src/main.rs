@@ -7,20 +7,10 @@ use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{image::Image, Emitter, Listener, LogicalSize, Manager, WindowEvent};
 
-fn load_tray_icon(app: &tauri::AppHandle) -> tauri::Result<Image<'static>> {
-    let resource_icon = app
-        .path()
-        .resolve("icons/tray.png", tauri::path::BaseDirectory::Resource)?;
+const TRAY_ICON_BYTES: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/icons/tray.png"));
 
-    if resource_icon.exists() {
-        return Image::from_path(&resource_icon);
-    }
-
-    let dev_icon = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("icons")
-        .join("tray.png");
-
-    Image::from_path(&dev_icon)
+fn load_tray_icon() -> tauri::Result<Image<'static>> {
+    Image::from_bytes(TRAY_ICON_BYTES)
 }
 
 fn show_main_window(app: &tauri::AppHandle) {
@@ -99,7 +89,7 @@ pub fn run() {
             let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show, &quit])?;
 
-            let tray_icon = load_tray_icon(app.handle())?;
+            let tray_icon = load_tray_icon()?;
 
             TrayIconBuilder::with_id("main")
                 .icon(tray_icon)
