@@ -80,20 +80,6 @@ struct ProgressPayload {
     total: usize,
 }
 
-/// Print a debug message from the frontend into the Rust terminal output.
-#[tauri::command]
-pub fn debug_log(level: String, message: String, context: Option<serde_json::Value>) {
-    let context_suffix = context
-        .map(|value| format!(" | context={value}"))
-        .unwrap_or_default();
-
-    match level.to_ascii_lowercase().as_str() {
-        "error" => eprintln!("[frontend:error] {message}{context_suffix}"),
-        "warn" => eprintln!("[frontend:warn] {message}{context_suffix}"),
-        _ => println!("[frontend:info] {message}{context_suffix}"),
-    }
-}
-
 /// Resize the outer window so the visible webview viewport becomes exactly 428x318.
 #[tauri::command]
 pub fn sync_window_viewport(
@@ -105,11 +91,6 @@ pub fn sync_window_viewport(
     let target_height = 318.0;
     let width_delta = target_width - viewport_width;
     let height_delta = target_height - viewport_height;
-
-    println!(
-        "[rust:info] viewport sync request: viewport={}x{}, delta={}x{}",
-        viewport_width, viewport_height, width_delta, height_delta
-    );
 
     if width_delta.abs() < 0.5 && height_delta.abs() < 0.5 {
         return Ok(());
@@ -130,11 +111,6 @@ pub fn sync_window_viewport(
     window
         .set_size(LogicalSize::new(next_width, next_height))
         .map_err(|error| format!("failed to resize window: {error}"))?;
-
-    println!(
-        "[rust:info] resized outer window to {}x{} logical",
-        next_width, next_height
-    );
 
     Ok(())
 }

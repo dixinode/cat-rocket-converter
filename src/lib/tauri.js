@@ -57,10 +57,6 @@ export function listenToFinderOpenFiles(handler) {
   return listen('finder-open-files', (event) => handler(event.payload ?? []));
 }
 
-export function debugLog(level, message, context = null) {
-  return invoke('debug_log', { level, message, context });
-}
-
 export function syncWindowViewport(viewportWidth, viewportHeight) {
   return invoke('sync_window_viewport', { viewportWidth, viewportHeight });
 }

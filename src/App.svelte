@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { cubicIn, cubicOut } from 'svelte/easing';
-  import { debugLog, getImageInfo, listenToFinderOpenFiles, syncWindowViewport, takePendingOpenFiles } from './lib/tauri.js';
+  import { getImageInfo, listenToFinderOpenFiles, syncWindowViewport, takePendingOpenFiles } from './lib/tauri.js';
   import { wizard, goToPage, resetWizard, setFiles } from './stores/wizard.js';
   import waitForConversionBackground from '../wait_for_conversion.png';
   import Page1Drop from './pages/Page1Drop.svelte';
@@ -81,10 +81,7 @@
       resetWizard();
       setFiles(files, info);
     } catch (error) {
-      void debugLog('error', 'failed to load files opened from Finder', {
-        files,
-        error: String(error),
-      });
+      console.error('Failed to load files opened from Finder', files, error);
     }
   }
 
@@ -96,28 +93,14 @@
   onMount(() => {
     let disposed = false;
 
-    const logCanvasMetrics = () => {
-      const canvas = document.querySelector('.canvas');
-      const rect = canvas?.getBoundingClientRect();
-
-      void debugLog('info', 'canvas metrics', {
-        windowInnerWidth: window.innerWidth,
-        windowInnerHeight: window.innerHeight,
-        canvasWidth: rect ? Math.round(rect.width) : null,
-        canvasHeight: rect ? Math.round(rect.height) : null,
-      });
-    };
-
     const syncViewport = () => {
       void syncWindowViewport(window.innerWidth, window.innerHeight);
     };
 
     requestAnimationFrame(() => {
       syncViewport();
-      logCanvasMetrics();
-      setTimeout(logCanvasMetrics, 120);
     });
-    window.addEventListener('resize', logCanvasMetrics);
+    window.addEventListener('resize', syncViewport);
 
     void (async () => {
       unlistenFinderOpen = await listenToFinderOpenFiles(() => {
@@ -131,7 +114,7 @@
 
     return () => {
       disposed = true;
-      window.removeEventListener('resize', logCanvasMetrics);
+      window.removeEventListener('resize', syncViewport);
       if (unlistenFinderOpen) {
         void unlistenFinderOpen();
       }

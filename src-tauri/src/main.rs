@@ -65,24 +65,11 @@ pub fn run() {
             commands::estimate_output,
             commands::open_save_dialog,
             commands::get_parent_dir,
-            commands::debug_log,
             commands::sync_window_viewport,
         ])
         .setup(|app| {
-            println!("[rust:info] setup start");
-
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.set_size(LogicalSize::new(428.0, 318.0));
-
-                match window.inner_size() {
-                    Ok(size) => println!("[rust:info] inner size = {}x{}", size.width, size.height),
-                    Err(error) => eprintln!("[rust:error] failed to read inner size: {error}"),
-                }
-
-                match window.outer_size() {
-                    Ok(size) => println!("[rust:info] outer size = {}x{}", size.width, size.height),
-                    Err(error) => eprintln!("[rust:error] failed to read outer size: {error}"),
-                }
             }
 
             let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
@@ -97,10 +84,7 @@ pub fn run() {
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
-                    "show" => {
-                        println!("[rust:info] tray menu show");
-                        show_main_window(app)
-                    }
+                    "show" => show_main_window(app),
                     "quit" => std::process::exit(0),
                     _ => {}
                 })
@@ -111,7 +95,6 @@ pub fn run() {
                         ..
                     } = event
                     {
-                        println!("[rust:info] tray left click");
                         show_main_window(tray.app_handle());
                     }
                 })
@@ -119,17 +102,13 @@ pub fn run() {
 
             let app_handle = app.handle().clone();
             app.listen("conversion_completed", move |_| {
-                println!("[rust:info] conversion completed event");
                 hide_main_window(&app_handle);
             });
-
-            println!("[rust:info] setup complete");
 
             Ok(())
         })
         .on_window_event(|window, event| {
             if let WindowEvent::CloseRequested { api, .. } = event {
-                println!("[rust:info] window close intercepted");
                 api.prevent_close();
                 let _ = window.hide();
             }

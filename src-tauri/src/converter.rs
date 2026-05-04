@@ -128,14 +128,9 @@ fn load_heic_image(path: &str) -> Result<DynamicImage, String> {
     let temp_dir =
         tempfile::tempdir().map_err(|error| format!("failed to create temp dir: {error}"))?;
     let output_path = temp_dir.path().join("converted.png");
-    let (orientation, raw_orientation) = read_orientation_with_sips_debug(path);
+    let orientation = read_orientation_with_sips(path).unwrap_or(Orientation::NoTransforms);
     let rotation = sips_rotation_degrees(orientation);
     let display_dimensions = read_heic_display_dimensions(path);
-
-    println!(
-        "[heic-debug] source={} raw_orientation={:?} parsed_orientation={:?} rotation={:?} display_dimensions={:?}",
-        path, raw_orientation, orientation, rotation, display_dimensions
-    );
 
     let mut command = Command::new("sips");
     command.arg("-s").arg("format").arg("png");
@@ -151,14 +146,6 @@ fn load_heic_image(path: &str) -> Result<DynamicImage, String> {
         .output()
         .map_err(|error| format!("failed to invoke sips for HEIC decode: {error}"))?;
 
-    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
-    println!(
-        "[heic-debug] sips stdout={} stderr={}",
-        if stdout.is_empty() { "<empty>" } else { &stdout },
-        if stderr.is_empty() { "<empty>" } else { &stderr }
-    );
-
     if !output.status.success() {
         return Err("failed to decode HEIC image".into());
     }
@@ -168,23 +155,9 @@ fn load_heic_image(path: &str) -> Result<DynamicImage, String> {
 
     if let Some((display_width, display_height)) = display_dimensions {
         if image.width() == display_height && image.height() == display_width {
-            println!(
-                "[heic-debug] applying mdls-based rotate90: decoded={}x{} display={}x{}",
-                image.width(),
-                image.height(),
-                display_width,
-                display_height
-            );
             image = image.rotate90();
         }
     }
-
-    println!(
-        "[heic-debug] decoded_dimensions={}x{} output_path={}",
-        image.width(),
-        image.height(),
-        output_path.display()
-    );
 
     Ok(image)
 }
@@ -204,33 +177,19 @@ fn read_image_orientation(path: &str) -> Orientation {
 }
 
 fn read_orientation_with_sips(path: &str) -> Option<Orientation> {
-    read_orientation_with_sips_debug(path).0.into()
-}
-
-fn read_orientation_with_sips_debug(path: &str) -> (Orientation, Option<String>) {
     let output = Command::new("sips")
         .arg("-g")
         .arg("orientation")
         .arg(path)
         .output()
-        .ok();
-
-    let Some(output) = output else {
-        return (Orientation::NoTransforms, None);
-    };
-
-    let stdout = String::from_utf8(output.stdout).ok();
+        .ok()?;
 
     if !output.status.success() {
-        return (Orientation::NoTransforms, stdout);
+        return None;
     }
 
-    let orientation = stdout
-        .as_deref()
-        .and_then(parse_sips_orientation)
-        .unwrap_or(Orientation::NoTransforms);
-
-    (orientation, stdout)
+    let stdout = String::from_utf8(output.stdout).ok()?;
+    parse_sips_orientation(&stdout)
 }
 
 fn parse_sips_orientation(output: &str) -> Option<Orientation> {
